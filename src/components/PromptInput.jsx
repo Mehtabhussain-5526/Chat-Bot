@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Mic, Send } from "./Graphics";
+import { Mic, Send, Logo } from "./Graphics";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import RecordRTC from "recordrtc";
@@ -112,7 +112,7 @@ const PromptInput = () => {
 
   return (
     <>
-      <div className="relative max-w-[768px]  text-white mx-auto mb-[50px] mt-[50px]">
+      <div className="relative max-w-[768px]  text-white mx-auto mb-[50px] mt-[50px] min-h-screen">
         <div className="pb-[100px]">
           <InfiniteScroll
             dataLength={Chats?.length}
@@ -132,7 +132,7 @@ const PromptInput = () => {
                 </div>
                 <div className="bg-transparent mt-[20px] flex gap-[20px]">
                   <div className="max-w-[50px] max-h-[50px] rounded-full absolute left-[-70px]">
-                    <img className="" src="src\assets\logo.png" alt="Chatbot" />
+                    <Logo />
                   </div>
                   <p className="leading-[28px] text-white font-normal text-[16px]">
                     {data.systemresponse}

@@ -168,3 +168,76 @@ export const SidebarToggle = (props) => (
     />
   </svg>
 )
+
+export const Logo = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={44}
+    height={44}
+    viewBox="0 0 200 200"
+    {...props}
+  >
+    <circle
+      cx={100}
+      cy={100}
+      r={95}
+      fill="url(#a)"
+      stroke="#222"
+      strokeWidth={4}
+    />
+    <rect
+      width={100}
+      height={100}
+      x={50}
+      y={50}
+      fill="url(#b)"
+      stroke="#222"
+      strokeWidth={3}
+      rx={20}
+      ry={20}
+    />
+    <circle cx={70} cy={85} r={10} fill="#fff" />
+    <circle cx={130} cy={85} r={10} fill="#fff" />
+    <circle cx={70} cy={85} r={5} fill="#00f" />
+    <circle cx={130} cy={85} r={5} fill="#00f" />
+    <rect width={50} height={10} x={75} y={120} fill="#222" rx={5} ry={5} />
+    <path stroke="#222" strokeWidth={4} d="M100 50V20" />
+    <circle cx={100} cy={20} r={6} fill="red" />
+    <path fill="#0f0" d="M65 70h70v5H65z" />
+    <path fill="#ff0" d="M65 100h70v5H65z" />
+    <defs>
+      <linearGradient id="a" x1="0%" x2="100%" y1="0%" y2="100%">
+        <stop
+          offset="0%"
+          style={{
+            stopColor: "#00f",
+            stopOpacity: 1,
+          }}
+        />
+        <stop
+          offset="100%"
+          style={{
+            stopColor: "#0ff",
+            stopOpacity: 1,
+          }}
+        />
+      </linearGradient>
+      <linearGradient id="b" x1="0%" x2="100%" y1="0%" y2="100%">
+        <stop
+          offset="0%"
+          style={{
+            stopColor: "#f0f",
+            stopOpacity: 1,
+          }}
+        />
+        <stop
+          offset="100%"
+          style={{
+            stopColor: "#ff0",
+            stopOpacity: 1,
+          }}
+        />
+      </linearGradient>
+    </defs>
+  </svg>
+)
