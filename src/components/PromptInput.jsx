@@ -112,7 +112,7 @@ const PromptInput = () => {
 
   return (
     <>
-      <div className="relative max-w-[768px]  text-white mx-auto mb-[50px] mt-[50px] min-h-[90vh]">
+      <div className="relative max-w-[768px]  text-white mx-auto mb-[50px] mt-[50px] min-h-[80vh]">
         <div className="pb-[100px]">
           <InfiniteScroll
             dataLength={Chats?.length}
