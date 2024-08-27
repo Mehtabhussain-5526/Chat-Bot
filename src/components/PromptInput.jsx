@@ -5,13 +5,13 @@ import { useState, useEffect } from "react";
 import RecordRTC from "recordrtc";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-
-
 const PromptInput = () => {
   const [promptEntered, SetPromptEntered] = useState();
   const [Chats, setChats] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
   const [infinitePage, setInfinitePage] = useState(1);
+  const [isBlinking, SetIsBlinking] = useState(false);
+  const streamRef = useRef(null);
   const promptinputRef = useRef();
   const recorderRef = useRef(null);
   const apiKey = import.meta.env.VITE_ACCESS_KEY;
@@ -59,10 +59,15 @@ const PromptInput = () => {
       });
   };
   const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    recorderRef.current = new RecordRTC(stream, { type: "audio" });
+    streamRef.current = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
+    recorderRef.current = new RecordRTC(streamRef.current, { type: "audio" });
     recorderRef.current.startRecording();
     setIsRecording(true);
+    setInterval(() => {
+      SetIsBlinking(!isBlinking);
+    }, 2000);
   };
   const wisper = async (audio) => {
     if (audio) {
@@ -81,7 +86,8 @@ const PromptInput = () => {
             },
           }
         );
-        SetPromptEntered(response.data);
+        promptinputRef.current.value = response.data;
+        // SetPromptEntered(response.data);
       } catch (error) {
         console.error("Error during transcription:", error);
       }
@@ -92,6 +98,10 @@ const PromptInput = () => {
       const audioBlob = recorderRef.current.getBlob();
       setIsRecording(false);
       wisper(audioBlob);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
     });
   };
   const chats =
@@ -112,7 +122,7 @@ const PromptInput = () => {
 
   return (
     <>
-      <div className="relative max-w-[768px]  text-white mx-auto mb-[50px] mt-[50px] min-h-[77vh]">
+      <div className="relative max-w-[768px]  text-white mx-auto mb-[50px] mt-[50px] min-h-screen">
         <div className="pb-[100px]">
           <InfiniteScroll
             dataLength={Chats?.length}
@@ -149,7 +159,9 @@ const PromptInput = () => {
                 onClick={isRecording ? stopRecording : startRecording}
                 className="w-[44px] h-[44px] flex items-center justify-center cursor-pointer"
               >
-                <Mic color={`${isRecording ? "#ff5656" : "#fff"}`} />
+                <Mic
+                  color={`${isRecording && isBlinking ? "#FF0000" : "#fff"}`}
+                />
               </div>
               <form
                 onSubmit={(e) => {
