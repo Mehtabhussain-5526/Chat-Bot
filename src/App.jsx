@@ -4,7 +4,7 @@ import MainContentDiv from "./components/MainContentDiv";
 const App = () => {
   return (
     <div className="bg-bgsecondary">
-      <div className="mx-auto max-w-[1440px]">
+      <div className="mx-auto max-w-[1440px] overflow-hidden">
         <MainContentDiv />
       </div>
     </div>

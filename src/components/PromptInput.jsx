@@ -8,9 +8,9 @@ import InfiniteScroll from "react-infinite-scroll-component";
 const PromptInput = () => {
   const [promptEntered, SetPromptEntered] = useState();
   const [Chats, setChats] = useState([]);
-  const [isRecording, setIsRecording] = useState(false);
+  const [response,SetResponse] = useState();
+  const [isrecording, setisrecording] = useState(false);
   const [infinitePage, setInfinitePage] = useState(1);
-  const [isBlinking, SetIsBlinking] = useState(false);
   const streamRef = useRef(null);
   const promptinputRef = useRef();
   const recorderRef = useRef(null);
@@ -36,7 +36,9 @@ const PromptInput = () => {
         headers: headers,
       })
       .then((response) => {
+        SetResponse(response.data.choices[0].message.content);
         console.log(response.data.choices[0].message.content);
+        localStorage.setItem("userprompt","");
         localStorage.setItem(
           "response",
           JSON.stringify(response.data.choices[0].message.content)
@@ -64,10 +66,7 @@ const PromptInput = () => {
     });
     recorderRef.current = new RecordRTC(streamRef.current, { type: "audio" });
     recorderRef.current.startRecording();
-    setIsRecording(true);
-    setInterval(() => {
-      SetIsBlinking(!isBlinking);
-    }, 2000);
+    setisrecording(true);
   };
   const wisper = async (audio) => {
     if (audio) {
@@ -96,7 +95,7 @@ const PromptInput = () => {
   const stopRecording = async () => {
     recorderRef.current.stopRecording(() => {
       const audioBlob = recorderRef.current.getBlob();
-      setIsRecording(false);
+      setisrecording(false);
       wisper(audioBlob);
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
@@ -151,16 +150,18 @@ const PromptInput = () => {
               </div>
             ))}
           </InfiniteScroll>
+          <div className={`flex justify-end ${response && "hidden"} ${promptEntered ? "block": "hidden"}`}> <p className="bg-[#2F2F2F] p-[20px] rounded-xl w-[500px] text-[16px] font-normal leading-6">{promptEntered}</p> </div>
         </div>
         <div className="absolute bottom-0 w-full">
           <div className="flex items-center justify-center w-full">
             <div className="flex bg-[#2F2F2F] max-w-[768px] w-full rounded-full h-[52px]  items-center px-[15px]">
               <div
-                onClick={isRecording ? stopRecording : startRecording}
+                onClick={isrecording ? stopRecording : startRecording}
                 className="w-[44px] h-[44px] flex items-center justify-center cursor-pointer"
               >
                 <Mic
-                  color={`${isRecording && isBlinking ? "#FF0000" : "#fff"}`}
+                isrecording={isrecording.toString()}
+                  color={`${isrecording ? "#FF0000" : "#fff"}`}
                 />
               </div>
               <form

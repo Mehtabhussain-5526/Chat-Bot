@@ -1,7 +1,8 @@
 import React from "react";
-export const Mic = ({props,color}) => (
+export const Mic = (props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
+    className={`${props.isrecording === "true" ? "animate-pulse" : ""}`}
     width={35}
     height={35}
     fill="none"
@@ -15,12 +16,12 @@ export const Mic = ({props,color}) => (
         height={12}
         x={9.5}
         y={3.5}
-        stroke={color}
+        stroke={props.color}
         strokeLinejoin="round"
         rx={2.5}
       />
       <path
-        stroke={color}
+        stroke={props.color}
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M17 12v1a5 5 0 0 1-5 5v0a5 5 0 0 1-5-5v-1M12 18v3m0 0H9m3 0h3"
