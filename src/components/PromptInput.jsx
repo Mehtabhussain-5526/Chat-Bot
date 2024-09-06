@@ -1,64 +1,102 @@
-import React, { useRef } from "react";
 import { Mic, Send, Logo } from "./Graphics";
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { React, useState, useEffect, useRef } from "react";
 import RecordRTC from "recordrtc";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 const PromptInput = () => {
   const [promptEntered, SetPromptEntered] = useState();
-  const [Chats, setChats] = useState([]);
-  const [response,SetResponse] = useState();
+  const [stream, setStream] = useState("");
   const [isrecording, setisrecording] = useState(false);
   const [infinitePage, setInfinitePage] = useState(1);
+  const [Chats, setChats] = useState([]);
+  const [contextStateArray, setContextStateArray] = useState([]);
   const streamRef = useRef(null);
-  const promptinputRef = useRef();
   const recorderRef = useRef(null);
+  const chatEndRef = useRef(null);
+  const promptinputRef = useRef();
   const apiKey = import.meta.env.VITE_ACCESS_KEY;
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${apiKey}`,
-  };
-  const save = (prompt) => {
-    const data = {
-      model: "gpt-4-turbo",
-      messages: [{ role: "user", content: promptEntered || prompt }],
-      max_tokens: 50,
-      n: 1,
-      stop: null,
-      temperature: 0.5,
-    };
-    promptinputRef.current.value = "";
-    promptinputRef.current.focus();
-    localStorage.setItem("userprompt", JSON.stringify(promptEntered || prompt));
-    axios
-      .post(`https://api.openai.com/v1/chat/completions`, data, {
-        headers: headers,
-      })
-      .then((response) => {
-        SetResponse(response.data.choices[0].message.content);
-        console.log(response.data.choices[0].message.content);
-        localStorage.setItem("userprompt","");
-        localStorage.setItem(
-          "response",
-          JSON.stringify(response.data.choices[0].message.content)
-        );
-        if (chats) {
-          chats.push({
-            id: "",
-            userinput: promptEntered || prompt,
-            systemresponse: response.data.choices[0].message.content,
-          });
-          setChats([...chats]);
-        }
-        localStorage.setItem("chats", JSON.stringify(chats));
-      })
-      .catch((error) => {
-        console.error(
-          "Error:",
-          error.response ? error.response.data : error.message
-        );
+
+  const save = async (prompt) => {
+    if (promptEntered) {
+      setContextStateArray((prevState) => [
+        ...prevState,
+        { role: "user", content: promptEntered || prompt },
+      ]);
+    }
+
+    const url = `https://api.trybricks.ai/api/providers/openai/v1/chat/completions`;
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: contextStateArray.concat({
+            role: "user",
+            content: promptEntered,
+          }),
+          n: 1,
+          max_tokens: 4096,
+          temperature: 0.5,
+          stream: true,
+        }),
       });
+
+      setStream("");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let accumulatedText = "";
+      let assistantResponse = "";
+
+      while (true) {
+        const chunk = await reader.read();
+        const { done, value } = chunk;
+        if (done) {
+          console.log("done");
+          break;
+        }
+
+        const decodedChunk = decoder.decode(value, { stream: true });
+        accumulatedText += decodedChunk;
+
+        const lines = accumulatedText.split("\n");
+
+        for (let i = 0; i < lines.length - 1; i++) {
+          const line = lines[i].replace(/^data: /, "").trim();
+          if (line) {
+            try {
+              const parsedLine = JSON.parse(line);
+              const { choices } = parsedLine;
+              const { delta } = choices[0];
+              const { content } = delta;
+              if (content) {
+                assistantResponse += content;
+                setStream((prev) => prev + content);
+              }
+            } catch (error) {
+              // console.log("Error parsing line:", line, error);
+            }
+          }
+        }
+
+        accumulatedText = lines[lines.length - 1];
+      }
+      if (response && promptEntered) {
+        setContextStateArray((prevState) => [
+          ...prevState,
+          { role: "assistant", content: assistantResponse },
+        ]);
+      }
+
+      promptinputRef.current.value = "";
+    } catch (error) {
+      console.log("try Error:", error.message);
+    }
   };
   const startRecording = async () => {
     streamRef.current = await navigator.mediaDevices.getUserMedia({
@@ -76,7 +114,7 @@ const PromptInput = () => {
       formData.append("response_format", "text");
       try {
         const response = await axios.post(
-          "https://api.openai.com/v1/audio/transcriptions",
+          "https://api.trybricks.ai/api/providers/openai/v1/chat/completions",
           formData,
           {
             headers: {
@@ -86,7 +124,6 @@ const PromptInput = () => {
           }
         );
         promptinputRef.current.value = response.data;
-        // SetPromptEntered(response.data);
       } catch (error) {
         console.error("Error during transcription:", error);
       }
@@ -110,23 +147,30 @@ const PromptInput = () => {
     if (!chats) {
       localStorage.setItem("chats", JSON.stringify([]));
     }
+    setContextStateArray(chats);
     setChats(chats?.slice(0, infinitePage * 10) || []);
   }, []);
 
   useEffect(() => {
-    if (promptEntered) {
-      save();
-    }
+    save();
   }, [promptEntered]);
 
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [stream]);
+
+  useEffect(() => {
+    if (stream) {
+      localStorage.setItem("chats", JSON.stringify(contextStateArray));
+    }
+  }, [contextStateArray]);
   return (
     <>
-      <div className="relative max-w-[768px]  text-white mx-auto mb-[50px] mt-[50px] min-h-screen">
-        <div className="pb-[100px]">
+      <div className="relative max-w-[768px] text-white mx-auto mb-[50px] mt-[50px] min-h-full pb-[90px]">
+        <div className="">
           <InfiniteScroll
             dataLength={Chats?.length}
             next={() => {
-              console.log("next");
               setChats(chats?.slice(0, (infinitePage + 1) * 10));
               setInfinitePage((prev) => prev + 1);
             }}
@@ -134,33 +178,52 @@ const PromptInput = () => {
           >
             {Chats?.map((data, index) => (
               <div key={index} className="">
-                <div className=" flex justify-end w-full text-left text-white bg-transparent mt-[30px]">
+              {data.role!=="assistant"?  <div className=" flex justify-end w-full text-left text-white bg-transparent mt-[30px]">
                   <p className="bg-[#2F2F2F] p-[20px] rounded-xl w-[500px] text-[16px] font-normal leading-6">
-                    {data.userinput}
+                    {data.content}
                   </p>
-                </div>
-                <div className="bg-transparent mt-[20px] flex gap-[20px]">
-                  <div className="max-w-[50px] max-h-[50px] rounded-full absolute left-[-70px]">
+                </div>:
+                <div className=" bg-transparent mt-[20px] flex items-center gap-[20px]">
+                  <div className="max-w-[50px] max-h-[50px] rounded-full ">
                     <Logo />
                   </div>
-                  <p className="leading-[28px] text-white font-normal text-[16px]">
-                    {data.systemresponse}
+                  <p className="bg-[#212121] leading-[28px] text-white font-normal text-[16px]">
+                    {data.content }
                   </p>
-                </div>
+                </div>}
               </div>
             ))}
           </InfiniteScroll>
-          <div className={`flex justify-end ${response && "hidden"} ${promptEntered ? "block": "hidden"}`}> <p className="bg-[#2F2F2F] p-[20px] rounded-xl w-[500px] text-[16px] font-normal leading-6">{promptEntered}</p> </div>
         </div>
-        <div className="absolute bottom-0 w-full">
-          <div className="flex items-center justify-center w-full">
-            <div className="flex bg-[#2F2F2F] max-w-[768px] w-full rounded-full h-[52px]  items-center px-[15px]">
+        <div>
+          {stream && (
+            <div className={``}>
+              <div className=" flex justify-end w-full text-left text-white bg-transparent mt-[30px]">
+                <p className="bg-[#2F2F2F] p-[20px] rounded-xl w-[500px] text-[16px] font-normal leading-6">
+                  {promptEntered}
+                </p>
+              </div>
+              <div className={`bg-transparent mt-[20px] flex gap-[20px]`}>
+                <div className="max-w-[50px] max-h-[50px] rounded-full absolute left-[-70px]">
+                  <Logo />
+                </div>
+                <p className="bg-[#212121] leading-[28px] text-white font-normal text-[16px] mb-[50px]">
+                  {stream}
+                </p>
+              </div>
+              <div ref={chatEndRef}></div>
+            </div>
+          )}
+        </div>
+        <div className="fixed bottom-0 max-w-[768px] w-full">
+          <div className="bg-[#212121] pb-5 w-full">
+            <div className="flex bg-[#2F2F2F] w-full rounded-full h-[52px]  items-center px-[15px]">
               <div
                 onClick={isrecording ? stopRecording : startRecording}
                 className="w-[44px] h-[44px] flex items-center justify-center cursor-pointer"
               >
                 <Mic
-                isrecording={isrecording.toString()}
+                  isrecording={isrecording.toString()}
                   color={`${isrecording ? "#FF0000" : "#fff"}`}
                 />
               </div>
@@ -169,7 +232,7 @@ const PromptInput = () => {
                   e.preventDefault();
                   SetPromptEntered(promptinputRef.current.value);
                 }}
-                className="flex justify-between w-full"
+                className="flex justify-between w-full "
               >
                 <input
                   ref={promptinputRef}

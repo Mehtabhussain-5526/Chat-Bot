@@ -5,7 +5,7 @@ const Nav = () => {
   return (
     <>
     <div className=' bg-bgsecondary h-[56px] px-[20px] py-[10px]'>
-      <div className='flex items-center justify-between'>
+      <div className='flex items-center justify-between w-full'>
         <p className='text-[#9B9B9B] text-[24px]'>ChatBot</p>
         <div>
           <Share/>

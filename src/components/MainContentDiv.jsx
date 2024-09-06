@@ -7,9 +7,9 @@ import PromptInput from "./PromptInput";
 const MainContentDiv = () => {
   return (
     <>
-      <div className="flex w-[1190] min-h-screen">
-        <div className="w-[100vw]">
-          <div className="z-10 w-full bg-bgsecondary">
+      <div className="flex min-h-screen">
+        <div className="w-full">
+          <div className="fixed top-0 z-10 w-full max-w-[1440px] bg-bgsecondary">
             <Nav />
           </div>
           <div className="text-white ">

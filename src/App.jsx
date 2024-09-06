@@ -1,9 +1,8 @@
-import React, { useState } from "react";
 import MainContentDiv from "./components/MainContentDiv";
 
 const App = () => {
   return (
-    <div className="bg-bgsecondary">
+    <div className="">
       <div className="mx-auto max-w-[1440px] overflow-hidden">
         <MainContentDiv />
       </div>
