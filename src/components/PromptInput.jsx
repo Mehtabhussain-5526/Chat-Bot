@@ -3,6 +3,9 @@ import axios from "axios";
 import { React, useState, useEffect, useRef } from "react";
 import RecordRTC from "recordrtc";
 import InfiniteScroll from "react-infinite-scroll-component";
+import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { materialDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 const PromptInput = () => {
   const [promptEntered, SetPromptEntered] = useState();
@@ -23,6 +26,7 @@ const PromptInput = () => {
         ...prevState,
         { role: "user", content: promptEntered || prompt },
       ]);
+      promptinputRef.current.value = "";
     }
 
     const url = `https://api.trybricks.ai/api/providers/openai/v1/chat/completions`;
@@ -40,7 +44,7 @@ const PromptInput = () => {
             content: promptEntered,
           }),
           n: 1,
-          max_tokens: 4096,
+          max_tokens: 10,
           temperature: 0.5,
           stream: true,
         }),
@@ -92,8 +96,6 @@ const PromptInput = () => {
           { role: "assistant", content: assistantResponse },
         ]);
       }
-
-      promptinputRef.current.value = "";
     } catch (error) {
       console.log("try Error:", error.message);
     }
@@ -140,84 +142,128 @@ const PromptInput = () => {
       }
     });
   };
-  const chats =
-    localStorage.getItem("chats") && JSON.parse(localStorage.getItem("chats"));
+
+  const chats = contextStateArray;
 
   useEffect(() => {
-    if (!chats) {
-      localStorage.setItem("chats", JSON.stringify([]));
+    if (chats.length >= 10) {
+      setChats(chats?.slice(0, infinitePage * 10) || []);
+    } else {
+      setChats(chats.slice(0,(chats.role=="user"&&chats.lenght)));
     }
-    setContextStateArray(chats);
-    setChats(chats?.slice(0, infinitePage * 10) || []);
   }, []);
 
   useEffect(() => {
-    save();
+    if (promptEntered) {
+      save();
+    }
   }, [promptEntered]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [stream]);
-
-  useEffect(() => {
-    if (stream) {
-      localStorage.setItem("chats", JSON.stringify(contextStateArray));
-    }
-  }, [contextStateArray]);
   return (
     <>
-      <div className="relative max-w-[768px] text-white mx-auto mb-[50px] mt-[50px] min-h-full pb-[90px]">
-        <div className="">
-          <InfiniteScroll
-            dataLength={Chats?.length}
-            next={() => {
-              setChats(chats?.slice(0, (infinitePage + 1) * 10));
-              setInfinitePage((prev) => prev + 1);
-            }}
-            hasMore={true}
-          >
-            {Chats?.map((data, index) => (
-              <div key={index} className="">
-              {data.role!=="assistant"?  <div className=" flex justify-end w-full text-left text-white bg-transparent mt-[30px]">
-                  <p className="bg-[#2F2F2F] p-[20px] rounded-xl w-[500px] text-[16px] font-normal leading-6">
-                    {data.content}
-                  </p>
-                </div>:
-                <div className=" bg-transparent mt-[20px] flex items-center gap-[20px]">
-                  <div className="max-w-[50px] max-h-[50px] rounded-full ">
-                    <Logo />
-                  </div>
-                  <p className="bg-[#212121] leading-[28px] text-white font-normal text-[16px]">
-                    {data.content }
-                  </p>
-                </div>}
-              </div>
-            ))}
-          </InfiniteScroll>
-        </div>
+      <div className="relative max-w-[1400px] text-white mx-auto mb-[50px] mt-[50px] min-h-full pb-[90px] px-5">
         <div>
-          {stream && (
-            <div className={``}>
-              <div className=" flex justify-end w-full text-left text-white bg-transparent mt-[30px]">
-                <p className="bg-[#2F2F2F] p-[20px] rounded-xl w-[500px] text-[16px] font-normal leading-6">
-                  {promptEntered}
-                </p>
+          {Chats && (
+            <div>
+              <div>
+                <InfiniteScroll
+                  dataLength={Chats?.length}
+                  next={() => {
+                    setChats(chats?.slice(0, (infinitePage + 1) * 10));
+                    setInfinitePage((prev) => prev + 1);
+                  }}
+                  hasMore={true}
+                >
+                  {Chats?.map((data, index) => (
+                    <div key={index} className="">
+                      {data.role !== "assistant" ? (
+                        <div className=" flex justify-end w-full text-left text-white bg-transparent mt-[30px]">
+                          <div className="bg-[#2F2F2F] p-[20px] rounded-xl w-[500px] text-[16px] font-normal leading-6">
+                            {data.content}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className=" bg-transparent mt-[20px] flex items-center gap-[20px]">
+                          <div className="max-w-[50px] max-h-[50px] rounded-full ">
+                            <Logo />
+                          </div>
+                          <div className="bg-[#212121] leading-[28px] text-white font-normal text-[16px]">
+                            <ReactMarkdown
+                              children={data.content}
+                              components={{
+                                code({
+                                  node,
+                                  inline,
+                                  className,
+                                  children,
+                                  ...props
+                                }) {
+                                  const match = /language-(\w+)/.exec(
+                                    className || ""
+                                  );
+                                  return !inline && match ? (
+                                    <SyntaxHighlighter
+                                      style={materialDark}
+                                      language={match[1]}
+                                      PreTag="div"
+                                      {...props}
+                                    >
+                                      {String(children).replace(/\n$/, "")}
+                                    </SyntaxHighlighter>
+                                  ) : (
+                                    <code className={className} {...props}>
+                                      {children}
+                                    </code>
+                                  );
+                                },
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </InfiniteScroll>
               </div>
               <div className={`bg-transparent mt-[20px] flex gap-[20px]`}>
-                <div className="max-w-[50px] max-h-[50px] rounded-full absolute left-[-70px]">
-                  <Logo />
+                <div className="max-w-[50px] max-h-[50px] rounded-full">
+                  {!stream == "" && <Logo />}
                 </div>
-                <p className="bg-[#212121] leading-[28px] text-white font-normal text-[16px] mb-[50px]">
-                  {stream}
-                </p>
+                <div className="bg-[#212121] leading-[28px] text-white mb-[50px]">
+                  <ReactMarkdown
+                    children={stream}
+                    components={{
+                      code({ node, inline, className, children, ...props }) {
+                        const match = /language-(\w+)/.exec(className || "");
+                        return !inline && match ? (
+                          <SyntaxHighlighter
+                            style={materialDark}
+                            language={match[1]}
+                            PreTag="div"
+                            {...props}
+                          >
+                            {String(children).replace(/\n$/, "")}
+                          </SyntaxHighlighter>
+                        ) : (
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        );
+                      },
+                    }}
+                  />
+                </div>
               </div>
               <div ref={chatEndRef}></div>
             </div>
           )}
         </div>
-        <div className="fixed bottom-0 max-w-[768px] w-full">
-          <div className="bg-[#212121] pb-5 w-full">
-            <div className="flex bg-[#2F2F2F] w-full rounded-full h-[52px]  items-center px-[15px]">
+        <div className="fixed bottom-0 max-w-[1400px] w-full">
+          <div className="bg-[#212121] pb-5 w-full flex justify-center items-center">
+            <div className="flex bg-[#2F2F2F] max-w-[768px] w-full rounded-full h-[52px]  items-center px-[15px]">
               <div
                 onClick={isrecording ? stopRecording : startRecording}
                 className="w-[44px] h-[44px] flex items-center justify-center cursor-pointer"
