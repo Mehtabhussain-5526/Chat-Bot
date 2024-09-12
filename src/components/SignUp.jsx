@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useNavigation } from "react-router-dom";
 import { auth, db } from "../config/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore"; // For writing to Firestore
@@ -10,6 +10,7 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -30,6 +31,7 @@ const SignUp = () => {
       });
 
       console.log("User registered and details saved to Firestore:", user.uid);
+      navigate("/mainpage");
     } catch (err) {
       setError(err.message);
       console.error("Error registering user:", err);
@@ -122,7 +124,7 @@ const SignUp = () => {
             <p className="text-white text-opacity-50">
               Already have an account?
             </p>
-            <Link to={"/"}>
+            <Link to={"/mainpage"}>
               <button className="ml-[5px] text-[#11A37F] brightness-150">
                 Log In
               </button>

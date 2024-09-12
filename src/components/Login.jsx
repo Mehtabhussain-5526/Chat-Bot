@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../config/firebase";
@@ -9,6 +9,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const displayErrorRef = useRef();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -37,6 +38,11 @@ const Login = () => {
           <h2 className="mb-6 text-2xl font-bold text-center text-white text-opacity-50 ">
             Login to Chat-Bot
           </h2>
+          {/* {setError && (
+            <div className="text-center">
+              <p className="text-red-500 text-[14px] tracking-wider">Invalid Email address or Password</p>
+            </div>
+          )} */}
           <form onSubmit={handleLogin}>
             <div className="mb-4">
               <label

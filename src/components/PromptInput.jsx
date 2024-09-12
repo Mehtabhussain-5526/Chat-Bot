@@ -6,6 +6,8 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { materialDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../config/firebase";
 
 const PromptInput = () => {
   const [promptEntered, SetPromptEntered] = useState();
@@ -19,6 +21,12 @@ const PromptInput = () => {
   const chatEndRef = useRef(null);
   const promptinputRef = useRef();
   const apiKey = import.meta.env.VITE_ACCESS_KEY;
+
+  const user = auth.currentUser;
+
+  if (user) {
+    console.log(user.uid);
+  }
 
   const save = async (prompt) => {
     if (promptEntered) {
@@ -149,7 +157,7 @@ const PromptInput = () => {
     if (chats.length >= 10) {
       setChats(chats?.slice(0, infinitePage * 10) || []);
     } else {
-      setChats(chats.slice(0,(chats.role=="user"&&chats.lenght)));
+      setChats(chats.slice(0, chats.role == "user" && chats.lenght));
     }
   }, []);
 
