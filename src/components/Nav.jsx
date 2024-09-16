@@ -9,7 +9,6 @@ const Nav = () => {
   const handleLogOut = () => {
     signOut(auth)
       .then(() => {
-        // Sign-out successful.
         navigate("/");
         console.log("Signed out successfully");
       })

@@ -1,6 +1,6 @@
 import { Mic, Send, Logo } from "./Graphics";
 import axios from "axios";
-import { React, useState, useEffect, useRef } from "react";
+import { React, useState, useEffect, useRef, useContext } from "react";
 import RecordRTC from "recordrtc";
 import InfiniteScroll from "react-infinite-scroll-component";
 import ReactMarkdown from "react-markdown";
@@ -8,8 +8,22 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { materialDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../config/firebase";
+import {
+  collection,
+  doc,
+  getDoc,
+  addDoc,
+  query,
+  where,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
+import { db } from "../config/firebase";
+import { MyContext } from "../context/context";
 
 const PromptInput = () => {
+  const { sharedVar } = useContext(MyContext);
+  const [newDocRef, setNewDocRef] = useState(null);
   const [promptEntered, SetPromptEntered] = useState();
   const [stream, setStream] = useState("");
   const [isrecording, setisrecording] = useState(false);
@@ -22,11 +36,59 @@ const PromptInput = () => {
   const promptinputRef = useRef();
   const apiKey = import.meta.env.VITE_ACCESS_KEY;
 
-  const user = auth.currentUser;
+  const getChatDataById = async () => {
+    try {
+      const docRef = doc(db, "chats", newDocRef);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        let existingDataOnFirestore=docSnap.data();
+        setContextStateArray(existingDataOnFirestore.chatContext);
+      } else {
+        console.log("No such document!");
+      }
+    } catch (error) {
+      console.error("Error getting document:", error);
+    }
+  };
 
-  if (user) {
-    console.log(user.uid);
-  }
+  getChatDataById(); 
+
+  const user = auth.currentUser;
+  const storeChatData = async (userId, chatContext) => {
+    if (!newDocRef) {
+      try {
+        const chatsCollectionRef = collection(db, "chats");
+
+        const chatData = {
+          userId: userId,
+          chatContext: chatContext,
+          timestamp: serverTimestamp(),
+        };
+
+        const docRef = await addDoc(chatsCollectionRef, chatData);
+        setNewDocRef(docRef.id);
+        console.log("Chat document added with ID: ", docRef.id);
+      } catch (error) {
+        console.error("Error adding chat document: ", error);
+      }
+    } else {
+      try {
+        const existingDocRef = doc(db, "chats", newDocRef);
+
+        const chatData = {
+          userId: userId,
+          chatContext: chatContext,
+          timestamp: serverTimestamp(),
+        };
+
+        const docRef = await updateDoc(existingDocRef, chatData);
+
+      } catch (error) {
+        console.error("Error updating chat document: ", error);
+      }
+    }
+  };
+
 
   const save = async (prompt) => {
     if (promptEntered) {
@@ -69,6 +131,7 @@ const PromptInput = () => {
         const chunk = await reader.read();
         const { done, value } = chunk;
         if (done) {
+          storeChatData(user.uid, contextStateArray);
           console.log("done");
           break;
         }
@@ -151,6 +214,13 @@ const PromptInput = () => {
     });
   };
 
+  useEffect(() => {
+    if (sharedVar) {
+      setNewDocRef(sharedVar);
+      console.log("Reference stored in state...", newDocRef);
+    }
+  }, [sharedVar]);
+
   const chats = contextStateArray;
 
   useEffect(() => {
@@ -170,6 +240,7 @@ const PromptInput = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [stream]);
+
   return (
     <>
       <div className="relative max-w-[1400px] text-white mx-auto mb-[50px] mt-[50px] min-h-full pb-[90px] px-5">
@@ -237,7 +308,7 @@ const PromptInput = () => {
                 </InfiniteScroll>
               </div>
               <div className={`bg-transparent mt-[20px] flex gap-[20px]`}>
-                <div className="max-w-[50px] max-h-[50px] rounded-full">
+                <div className="max-w-[44px] max-h-[44px] rounded-full">
                   {!stream == "" && <Logo />}
                 </div>
                 <div className="bg-[#212121] leading-[28px] text-white mb-[50px]">
@@ -269,7 +340,7 @@ const PromptInput = () => {
             </div>
           )}
         </div>
-        <div className="fixed bottom-0 max-w-[1400px] w-full">
+        <div className="fixed bottom-0 max-w-[1150px] w-full">
           <div className="bg-[#212121] pb-5 w-full flex justify-center items-center">
             <div className="flex bg-[#2F2F2F] max-w-[768px] w-full rounded-full h-[52px]  items-center px-[15px]">
               <div
