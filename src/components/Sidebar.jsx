@@ -1,13 +1,14 @@
-import React, { useContext } from "react";
+import React, { useEffect, useState,useContext } from "react";
 import SingleChat from "./SingleChat";
 import { NewChat, SidebarToggle } from "./Graphics";
 import { auth, db } from "../config/firebase";
 import { MyContext } from "../context/context";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp,query, where, getDocs } from "firebase/firestore";
 
 const Sidebar = () => {
+  const [chats, setChats] = useState([]);
   const { setSharedVar } = useContext(MyContext);
-
+  
   const user = auth.currentUser;
 
   const newChathandle = async () => {
@@ -26,6 +27,33 @@ const Sidebar = () => {
       console.error("Error adding chat document: ", error);
     }
   };
+  
+  useEffect(() => {
+    const fetchUserChats = async () => {
+      try {
+        if (user) {
+          const q = query(
+            collection(db, "chats"),
+            where("userId", "==", user.uid)
+          );
+
+          const querySnapshot = await getDocs(q);
+          const userChats = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+
+          setChats(userChats);
+        }
+      } catch (error) {
+        console.error("Error fetching user chats: ", error);
+      }
+    };
+
+    fetchUserChats();
+  }, [user]);
+
+
   return (
     <>
       <div className="bg-bgprimary h-full w-[250px] px-[8px]">
@@ -39,7 +67,14 @@ const Sidebar = () => {
             </div>
           </div>
         </div>
-        <SingleChat />
+        <div className="ml-5 text-white">
+          <p className="text-[16px] font-semibold tracking-wider">Chat History</p>
+        </div>
+        {
+          chats.map((data,index)=>(
+            <SingleChat id={data.id} content={new Date(data.timestamp?.seconds * 1000).toLocaleString()} />
+          ))
+        }
       </div>
     </>
   );

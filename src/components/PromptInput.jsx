@@ -27,21 +27,22 @@ const PromptInput = () => {
   const [promptEntered, SetPromptEntered] = useState();
   const [stream, setStream] = useState("");
   const [isrecording, setisrecording] = useState(false);
-  const [infinitePage, setInfinitePage] = useState(1);
-  const [Chats, setChats] = useState([]);
+  const [count, setCount] = useState();
+  // const [infinitePage, setInfinitePage] = useState(1);
   const [contextStateArray, setContextStateArray] = useState([]);
   const streamRef = useRef(null);
   const recorderRef = useRef(null);
   const chatEndRef = useRef(null);
   const promptinputRef = useRef();
   const apiKey = import.meta.env.VITE_ACCESS_KEY;
+  const user = auth.currentUser;
 
   const getChatDataById = async () => {
     try {
       const docRef = doc(db, "chats", newDocRef);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        let existingDataOnFirestore=docSnap.data();
+        let existingDataOnFirestore = docSnap.data();
         setContextStateArray(existingDataOnFirestore.chatContext);
       } else {
         console.log("No such document!");
@@ -51,9 +52,6 @@ const PromptInput = () => {
     }
   };
 
-  getChatDataById(); 
-
-  const user = auth.currentUser;
   const storeChatData = async (userId, chatContext) => {
     if (!newDocRef) {
       try {
@@ -82,13 +80,12 @@ const PromptInput = () => {
         };
 
         const docRef = await updateDoc(existingDocRef, chatData);
-
+        setNewDocRef(docRef.id);
       } catch (error) {
         console.error("Error updating chat document: ", error);
       }
     }
   };
-
 
   const save = async (prompt) => {
     if (promptEntered) {
@@ -131,7 +128,6 @@ const PromptInput = () => {
         const chunk = await reader.read();
         const { done, value } = chunk;
         if (done) {
-          storeChatData(user.uid, contextStateArray);
           console.log("done");
           break;
         }
@@ -166,6 +162,7 @@ const PromptInput = () => {
           ...prevState,
           { role: "assistant", content: assistantResponse },
         ]);
+        storeChatData(user.uid, contextStateArray);
       }
     } catch (error) {
       console.log("try Error:", error.message);
@@ -217,19 +214,11 @@ const PromptInput = () => {
   useEffect(() => {
     if (sharedVar) {
       setNewDocRef(sharedVar);
-      console.log("Reference stored in state...", newDocRef);
     }
+    getChatDataById();
   }, [sharedVar]);
 
-  const chats = contextStateArray;
-
-  useEffect(() => {
-    if (chats.length >= 10) {
-      setChats(chats?.slice(0, infinitePage * 10) || []);
-    } else {
-      setChats(chats.slice(0, chats.role == "user" && chats.lenght));
-    }
-  }, []);
+  // setChats(contextStateArray?.slice(0, infinitePage * 10) || []);
 
   useEffect(() => {
     if (promptEntered) {
@@ -239,106 +228,119 @@ const PromptInput = () => {
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    let index = contextStateArray.length - 1;
+    let filteredArray = contextStateArray[index];
+    if (filteredArray?.content == stream) {
+      setStream("");
+      SetPromptEntered("");
+    }
   }, [stream]);
+
+  useEffect(() => {
+    setCount((prev) => prev + 1);
+  }, [promptEntered || sharedVar || stream || contextStateArray]);
+
+  console.log(newDocRef, contextStateArray);
 
   return (
     <>
-      <div className="relative max-w-[1400px] text-white mx-auto mb-[50px] mt-[50px] min-h-full pb-[90px] px-5">
+      <div className="relative max-w-[1400px] text-white mx-auto my-[50px] min-h-full pb-[90px] px-5">
         <div>
-          {Chats && (
+          <div>
             <div>
-              <div>
-                <InfiniteScroll
-                  dataLength={Chats?.length}
-                  next={() => {
-                    setChats(chats?.slice(0, (infinitePage + 1) * 10));
-                    setInfinitePage((prev) => prev + 1);
-                  }}
-                  hasMore={true}
-                >
-                  {Chats?.map((data, index) => (
-                    <div key={index} className="">
-                      {data.role !== "assistant" ? (
-                        <div className=" flex justify-end w-full text-left text-white bg-transparent mt-[30px]">
-                          <div className="bg-[#2F2F2F] p-[20px] rounded-xl w-[500px] text-[16px] font-normal leading-6">
-                            {data.content}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className=" bg-transparent mt-[20px] flex items-center gap-[20px]">
-                          <div className="max-w-[50px] max-h-[50px] rounded-full ">
-                            <Logo />
-                          </div>
-                          <div className="bg-[#212121] leading-[28px] text-white font-normal text-[16px]">
-                            <ReactMarkdown
-                              children={data.content}
-                              components={{
-                                code({
-                                  node,
-                                  inline,
-                                  className,
-                                  children,
-                                  ...props
-                                }) {
-                                  const match = /language-(\w+)/.exec(
-                                    className || ""
-                                  );
-                                  return !inline && match ? (
-                                    <SyntaxHighlighter
-                                      style={materialDark}
-                                      language={match[1]}
-                                      PreTag="div"
-                                      {...props}
-                                    >
-                                      {String(children).replace(/\n$/, "")}
-                                    </SyntaxHighlighter>
-                                  ) : (
-                                    <code className={className} {...props}>
-                                      {children}
-                                    </code>
-                                  );
-                                },
-                              }}
-                            />
-                          </div>
-                        </div>
-                      )}
+              {contextStateArray?.map((data, index) => (
+                <div key={index} className="">
+                  {data.role !== "assistant" ? (
+                    <div className=" flex justify-end w-full text-left text-white bg-transparent mt-[30px]">
+                      <div className="bg-[#2F2F2F] p-[20px] rounded-xl w-[500px] text-[16px] font-normal leading-6">
+                        {data.content}
+                      </div>
                     </div>
-                  ))}
-                </InfiniteScroll>
-              </div>
-              <div className={`bg-transparent mt-[20px] flex gap-[20px]`}>
-                <div className="max-w-[44px] max-h-[44px] rounded-full">
-                  {!stream == "" && <Logo />}
+                  ) : (
+                    <div className=" bg-transparent mt-[20px] flex items-center gap-[20px]">
+                      <div className="max-w-[50px] max-h-[50px] rounded-full ">
+                        <Logo />
+                      </div>
+                      <div className="bg-[#212121] leading-[28px] text-white font-normal text-[16px]">
+                        <ReactMarkdown
+                          children={data.content}
+                          components={{
+                            code({
+                              node,
+                              inline,
+                              className,
+                              children,
+                              ...props
+                            }) {
+                              const match = /language-(\w+)/.exec(
+                                className || ""
+                              );
+                              return !inline && match ? (
+                                <SyntaxHighlighter
+                                  style={materialDark}
+                                  language={match[1]}
+                                  PreTag="div"
+                                  {...props}
+                                >
+                                  {String(children).replace(/\n$/, "")}
+                                </SyntaxHighlighter>
+                              ) : (
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              );
+                            },
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="bg-[#212121] leading-[28px] text-white mb-[50px]">
-                  <ReactMarkdown
-                    children={stream}
-                    components={{
-                      code({ node, inline, className, children, ...props }) {
-                        const match = /language-(\w+)/.exec(className || "");
-                        return !inline && match ? (
-                          <SyntaxHighlighter
-                            style={materialDark}
-                            language={match[1]}
-                            PreTag="div"
-                            {...props}
-                          >
-                            {String(children).replace(/\n$/, "")}
-                          </SyntaxHighlighter>
-                        ) : (
-                          <code className={className} {...props}>
-                            {children}
-                          </code>
-                        );
-                      },
-                    }}
-                  />
-                </div>
-              </div>
-              <div ref={chatEndRef}></div>
+              ))}
             </div>
-          )}
+            {/* <div>
+              <InfiniteScroll
+                dataLength={Chats?.length}
+                next={() => {
+                  setChats(chats?.slice(0, (infinitePage + 1) * 10));
+                  setInfinitePage((prev) => prev + 1);
+                }}
+                hasMore={true}
+              >
+                
+              </InfiniteScroll>
+            </div> */}
+            <div className={`bg-transparent mt-[20px] flex gap-[20px]`}>
+              <div className="max-w-[44px] max-h-[44px] rounded-full">
+                {!stream == "" && <Logo />}
+              </div>
+              <div className="bg-[#212121] leading-[28px] text-white mb-[50px]">
+                <ReactMarkdown
+                  children={stream}
+                  components={{
+                    code({ node, inline, className, children, ...props }) {
+                      const match = /language-(\w+)/.exec(className || "");
+                      return !inline && match ? (
+                        <SyntaxHighlighter
+                          style={materialDark}
+                          language={match[1]}
+                          PreTag="div"
+                          {...props}
+                        >
+                          {String(children).replace(/\n$/, "")}
+                        </SyntaxHighlighter>
+                      ) : (
+                        <code className={className} {...props}>
+                          {children}
+                        </code>
+                      );
+                    },
+                  }}
+                />
+              </div>
+            </div>
+            <div ref={chatEndRef}></div>
+          </div>
         </div>
         <div className="fixed bottom-0 max-w-[1150px] w-full">
           <div className="bg-[#212121] pb-5 w-full flex justify-center items-center">
