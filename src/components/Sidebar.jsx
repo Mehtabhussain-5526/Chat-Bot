@@ -1,14 +1,21 @@
-import React, { useEffect, useState,useContext } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import SingleChat from "./SingleChat";
 import { NewChat, SidebarToggle } from "./Graphics";
 import { auth, db } from "../config/firebase";
 import { MyContext } from "../context/context";
-import { collection, addDoc, serverTimestamp,query, where, getDocs } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 
 const Sidebar = () => {
   const [chats, setChats] = useState([]);
   const { setSharedVar } = useContext(MyContext);
-  
+
   const user = auth.currentUser;
 
   const newChathandle = async () => {
@@ -22,12 +29,13 @@ const Sidebar = () => {
       };
 
       const docRef = await addDoc(chatsCollectionRef, chatData);
+
       setSharedVar(docRef.id);
     } catch (error) {
       console.error("Error adding chat document: ", error);
     }
   };
-  
+
   useEffect(() => {
     const fetchUserChats = async () => {
       try {
@@ -53,7 +61,6 @@ const Sidebar = () => {
     fetchUserChats();
   }, [user]);
 
-
   return (
     <>
       <div className="bg-bgprimary h-full w-[250px] px-[8px]">
@@ -68,13 +75,16 @@ const Sidebar = () => {
           </div>
         </div>
         <div className="ml-5 text-white">
-          <p className="text-[16px] font-semibold tracking-wider">Chat History</p>
+          <p className="text-[16px] font-semibold tracking-wider">
+            Chat History
+          </p>
         </div>
-        {
-          chats.map((data,index)=>(
-            <SingleChat id={data.id} content={new Date(data.timestamp?.seconds * 1000).toLocaleString()} />
-          ))
-        }
+        {chats.map((data, index) => (
+          <SingleChat
+            id={data.id}
+            content={new Date(data.timestamp?.seconds * 1000).toLocaleString()}
+          />
+        ))}
       </div>
     </>
   );

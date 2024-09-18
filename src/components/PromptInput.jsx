@@ -22,24 +22,24 @@ import { db } from "../config/firebase";
 import { MyContext } from "../context/context";
 
 const PromptInput = () => {
-  const { sharedVar } = useContext(MyContext);
-  const [newDocRef, setNewDocRef] = useState(null);
   const [promptEntered, SetPromptEntered] = useState();
   const [stream, setStream] = useState("");
   const [isrecording, setisrecording] = useState(false);
-  const [count, setCount] = useState();
-  // const [infinitePage, setInfinitePage] = useState(1);
   const [contextStateArray, setContextStateArray] = useState([]);
+  // const [infinitePage, setInfinitePage] = useState(1);
+  const { sharedVar } = useContext(MyContext);
+  const { setSharedVar } = useContext(MyContext);
   const streamRef = useRef(null);
+  const streamTerminator = useRef();
   const recorderRef = useRef(null);
   const chatEndRef = useRef(null);
   const promptinputRef = useRef();
   const apiKey = import.meta.env.VITE_ACCESS_KEY;
   const user = auth.currentUser;
 
-  const getChatDataById = async () => {
+  const getChatDataById = async (data) => {
     try {
-      const docRef = doc(db, "chats", newDocRef);
+      const docRef = doc(db, "chats", data);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         let existingDataOnFirestore = docSnap.data();
@@ -53,34 +53,17 @@ const PromptInput = () => {
   };
 
   const storeChatData = async (userId, chatContext) => {
-    if (!newDocRef) {
+    if (sharedVar) {
       try {
-        const chatsCollectionRef = collection(db, "chats");
+        const existingDocRef = doc(db, "chats", sharedVar);
 
         const chatData = {
           userId: userId,
           chatContext: chatContext,
           timestamp: serverTimestamp(),
         };
-
-        const docRef = await addDoc(chatsCollectionRef, chatData);
-        setNewDocRef(docRef.id);
-        console.log("Chat document added with ID: ", docRef.id);
-      } catch (error) {
-        console.error("Error adding chat document: ", error);
-      }
-    } else {
-      try {
-        const existingDocRef = doc(db, "chats", newDocRef);
-
-        const chatData = {
-          userId: userId,
-          chatContext: chatContext,
-          timestamp: serverTimestamp(),
-        };
-
         const docRef = await updateDoc(existingDocRef, chatData);
-        setNewDocRef(docRef.id);
+        setSharedVar(sharedVar);
       } catch (error) {
         console.error("Error updating chat document: ", error);
       }
@@ -111,7 +94,7 @@ const PromptInput = () => {
             content: promptEntered,
           }),
           n: 1,
-          max_tokens: 10,
+          max_tokens: 100,
           temperature: 0.5,
           stream: true,
         }),
@@ -128,10 +111,10 @@ const PromptInput = () => {
         const chunk = await reader.read();
         const { done, value } = chunk;
         if (done) {
+          setStream("");
           console.log("done");
           break;
         }
-
         const decodedChunk = decoder.decode(value, { stream: true });
         accumulatedText += decodedChunk;
 
@@ -150,7 +133,7 @@ const PromptInput = () => {
                 setStream((prev) => prev + content);
               }
             } catch (error) {
-              // console.log("Error parsing line:", line, error);
+              console.error("Error parsing line:", line, error);
             }
           }
         }
@@ -162,12 +145,13 @@ const PromptInput = () => {
           ...prevState,
           { role: "assistant", content: assistantResponse },
         ]);
-        storeChatData(user.uid, contextStateArray);
+        SetPromptEntered("");
       }
     } catch (error) {
       console.log("try Error:", error.message);
     }
   };
+
   const startRecording = async () => {
     streamRef.current = await navigator.mediaDevices.getUserMedia({
       audio: true,
@@ -213,9 +197,10 @@ const PromptInput = () => {
 
   useEffect(() => {
     if (sharedVar) {
-      setNewDocRef(sharedVar);
+      getChatDataById(sharedVar);
+    } else {
+      console.log("first");
     }
-    getChatDataById();
   }, [sharedVar]);
 
   // setChats(contextStateArray?.slice(0, infinitePage * 10) || []);
@@ -228,27 +213,22 @@ const PromptInput = () => {
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    let index = contextStateArray.length - 1;
-    let filteredArray = contextStateArray[index];
-    if (filteredArray?.content == stream) {
-      setStream("");
-      SetPromptEntered("");
-    }
   }, [stream]);
 
   useEffect(() => {
-    setCount((prev) => prev + 1);
-  }, [promptEntered || sharedVar || stream || contextStateArray]);
+    if (contextStateArray.length == 2 || contextStateArray.length >= 2) {
+      storeChatData(user.uid, contextStateArray);
+    }
+  }, [contextStateArray]);
 
-  console.log(newDocRef, contextStateArray);
-
+  console.log(sharedVar, contextStateArray);
   return (
     <>
-      <div className="relative max-w-[1400px] text-white mx-auto my-[50px] min-h-full pb-[90px] px-5">
+      <div className="relative max-w-[1400px] text-white mx-auto mt-[56px] mb-[50px] min-h-full pb-[90px] px-5">
         <div>
           <div>
             <div>
-              {contextStateArray?.map((data, index) => (
+              {contextStateArray.map((data, index) => (
                 <div key={index} className="">
                   {data.role !== "assistant" ? (
                     <div className=" flex justify-end w-full text-left text-white bg-transparent mt-[30px]">
@@ -310,7 +290,10 @@ const PromptInput = () => {
                 
               </InfiniteScroll>
             </div> */}
-            <div className={`bg-transparent mt-[20px] flex gap-[20px]`}>
+            <div
+              ref={streamTerminator}
+              className={`bg-transparent mt-[20px] flex gap-[20px]`}
+            >
               <div className="max-w-[44px] max-h-[44px] rounded-full">
                 {!stream == "" && <Logo />}
               </div>
