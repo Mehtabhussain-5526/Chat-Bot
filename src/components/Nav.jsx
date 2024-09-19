@@ -14,7 +14,7 @@ const Nav = () => {
     signOut(auth)
       .then(() => {
         navigate("/");
-        console.log("Signed out successfully");
+        // console.log("Signed out successfully");
       })
       .catch((error) => {
         console.error(error);

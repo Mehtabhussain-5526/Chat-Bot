@@ -30,7 +30,7 @@ const SignUp = () => {
         password: password,
       });
 
-      console.log("User registered and details saved to Firestore:", user.uid);
+      // console.log("User registered and details saved to Firestore:", user.uid);
       navigate("/mainpage");
     } catch (err) {
       setError(err.message);

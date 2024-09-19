@@ -22,7 +22,7 @@ const Login = () => {
       );
       const user = userCredential.user;
 
-      console.log("User logged in:", user.uid);
+      // console.log("User logged in:", user.uid);
 
       navigate("/mainpage");
     } catch (err) {
