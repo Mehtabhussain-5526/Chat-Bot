@@ -6,10 +6,9 @@ import { MyContext } from "../context/context";
 const SingleChat = ({ ...props }) => {
   const [showmenu, SetShowmenu] = useState(false);
   const [isActive, setIsActive] = useState(false);
-  const {setSharedVar , sharedVar} = useContext(MyContext);
+  const { setSharedVar, sharedVar } = useContext(MyContext);
   const { id, content } = props;
   const docIdRefForDataFetch = useRef();
-
 
   const handlepastchatid = () => {
     setSharedVar(docIdRefForDataFetch.current.id);

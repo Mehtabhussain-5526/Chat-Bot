@@ -14,7 +14,7 @@ import {
 
 const Sidebar = () => {
   const [chats, setChats] = useState([]);
-  const { setSharedVar } = useContext(MyContext);
+  const { setSharedVar, sharedVar } = useContext(MyContext);
 
   const user = auth.currentUser;
 
@@ -50,16 +50,14 @@ const Sidebar = () => {
             id: doc.id,
             ...doc.data(),
           }));
-
           setChats(userChats);
         }
       } catch (error) {
         console.error("Error fetching user chats: ", error);
       }
     };
-
     fetchUserChats();
-  }, [user]);
+  }, [user, sharedVar]);
 
   return (
     <>

@@ -37,6 +37,30 @@ const PromptInput = () => {
   const apiKey = import.meta.env.VITE_ACCESS_KEY;
   const user = auth.currentUser;
 
+  const newChathandle = async () => {
+    try {
+      const chatsCollectionRef = collection(db, "chats");
+
+      const chatData = {
+        userId: user.uid,
+        chatContext: contextStateArray,
+        timestamp: serverTimestamp(),
+      };
+
+      const docRef = await addDoc(chatsCollectionRef, chatData);
+
+      setSharedVar(docRef.id);
+    } catch (error) {
+      console.error("Error adding chat document: ", error);
+    }
+  };
+
+  if (!sharedVar) {
+    if (promptEntered == "") {
+      newChathandle();
+    }
+  }
+
   const getChatDataById = async (data) => {
     try {
       const docRef = doc(db, "chats", data);
@@ -198,8 +222,6 @@ const PromptInput = () => {
   useEffect(() => {
     if (sharedVar) {
       getChatDataById(sharedVar);
-    } else {
-      console.log("first");
     }
   }, [sharedVar]);
 
@@ -221,7 +243,6 @@ const PromptInput = () => {
     }
   }, [contextStateArray]);
 
-  console.log(sharedVar, contextStateArray);
   return (
     <>
       <div className="relative max-w-[1400px] text-white mx-auto mt-[56px] mb-[50px] min-h-full pb-[90px] px-5">
@@ -287,7 +308,6 @@ const PromptInput = () => {
                 }}
                 hasMore={true}
               >
-                
               </InfiniteScroll>
             </div> */}
             <div

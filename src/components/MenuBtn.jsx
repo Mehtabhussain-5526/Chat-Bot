@@ -11,10 +11,7 @@ const MenuBtn = ({ setIsActive, isActive }) => {
     }
   };
   useEffect(() => {
-    // Add event listener when component mounts
     document.addEventListener("mousedown", handleClickOutside);
-
-    // Clean up the event listener when component unmounts
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -27,8 +24,6 @@ const MenuBtn = ({ setIsActive, isActive }) => {
           ref={buttonRef}
           onClick={() => {
             SetShow(!show);
-            
-            // setIsActive(!isActive)
           }}
           className="inline-flex items-center justify-center bg-bgsecondary"
           type="button"
