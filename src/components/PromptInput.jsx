@@ -192,7 +192,7 @@ const PromptInput = () => {
       formData.append("response_format", "text");
       try {
         const response = await axios.post(
-          "https://api.trybricks.ai/api/providers/openai/v1/chat/completions",
+          "https://api.trybricks.ai/api/providers/openai/v1/audio/transcriptions",
           formData,
           {
             headers: {

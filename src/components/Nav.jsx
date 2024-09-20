@@ -57,7 +57,7 @@ const Nav = () => {
               </span>
             </p>
           </div>
-          <div onClick={handleLogOut}>
+          <div className="cursor-pointer" onClick={handleLogOut}>
             <Share />
           </div>
         </div>
