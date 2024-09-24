@@ -9,7 +9,7 @@ const App = () => {
   return (
     <MyProvider>
       <div className="">
-        <div className="mx-auto max-w-[1440px] overflow-hidden">
+        <div className="mx-auto">
           <HashRouter>
             <Routes>
               <Route path="/mainpage" element={<AuthCheck />} />

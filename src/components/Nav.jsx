@@ -1,20 +1,23 @@
-import { React, useState, useEffect } from "react";
+import { React, useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Share } from "./Graphics";
 import { auth, db } from "../config/firebase";
 import { signOut } from "firebase/auth";
 import { getDoc, doc } from "firebase/firestore";
+import { MyContext } from "../context/context";
 
 const Nav = () => {
   const [fullName, setFullName] = useState("");
   const navigate = useNavigate();
+  const { setContextStateArray, contextStateArray} = useContext(MyContext);
   const user = auth.currentUser;
 
   const handleLogOut = () => {
+    setContextStateArray([]);
     signOut(auth)
       .then(() => {
         navigate("/");
-        // console.log("Signed out successfully");
+        // console.log("Signed out successfully", contextStateArray);
       })
       .catch((error) => {
         console.error(error);
@@ -32,7 +35,7 @@ const Nav = () => {
 
         setFullName(`${firstName} ${lastName}`);
       } else {
-        console.log("No such user document!");
+        // console.log("No such user document!");
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -47,7 +50,7 @@ const Nav = () => {
   return (
     <>
       <div className=" bg-bgsecondary h-[56px] px-[20px] py-[10px]">
-        <div className="flex items-center justify-between w-full">
+        <div className="flex items-center justify-between ">
           <div className="flex gap-8">
             <p className="text-[#9B9B9B] text-[24px]">ChatBot</p>
             <p className="text-[#9B9B9B] text-[16px] self-center font-semibold">

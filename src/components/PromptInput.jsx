@@ -25,10 +25,9 @@ const PromptInput = () => {
   const [promptEntered, SetPromptEntered] = useState();
   const [stream, setStream] = useState("");
   const [isrecording, setisrecording] = useState(false);
-  const [contextStateArray, setContextStateArray] = useState([]);
-  // const [infinitePage, setInfinitePage] = useState(1);
-  const { sharedVar } = useContext(MyContext);
-  const { setSharedVar } = useContext(MyContext);
+  const {authenticated, contextStateArray, setContextStateArray } = useContext(MyContext);
+  const { setSharedVar, sharedVar } = useContext(MyContext);
+  const { isCollapsed } = useContext(MyContext);
   const streamRef = useRef(null);
   const streamTerminator = useRef();
   const recorderRef = useRef(null);
@@ -69,7 +68,7 @@ const PromptInput = () => {
         let existingDataOnFirestore = docSnap.data();
         setContextStateArray(existingDataOnFirestore.chatContext);
       } else {
-        console.log("No such document!");
+        // console.log("No such document!");
       }
     } catch (error) {
       console.error("Error getting document:", error);
@@ -136,7 +135,7 @@ const PromptInput = () => {
         const { done, value } = chunk;
         if (done) {
           setStream("");
-          console.log("done");
+          // console.log("done");
           break;
         }
         const decodedChunk = decoder.decode(value, { stream: true });
@@ -172,7 +171,7 @@ const PromptInput = () => {
         SetPromptEntered("");
       }
     } catch (error) {
-      console.log("try Error:", error.message);
+      // console.log("try Error:", error.message);
     }
   };
 
@@ -220,16 +219,23 @@ const PromptInput = () => {
   };
 
   useEffect(() => {
-    if (sharedVar) {
-      getChatDataById(sharedVar);
+    if (authenticated) {
+      if (sharedVar) {
+        if (!sharedVar == "") {
+          getChatDataById(sharedVar);
+        }
+      }
+      // console.log("shareVar... Running after logging out");
+    } else {
+      setContextStateArray([]);
     }
   }, [sharedVar]);
 
-  // setChats(contextStateArray?.slice(0, infinitePage * 10) || []);
-
   useEffect(() => {
     if (promptEntered) {
-      save();
+      if (promptEntered !== "") {
+        save();
+      }
     }
   }, [promptEntered]);
 
@@ -238,14 +244,19 @@ const PromptInput = () => {
   }, [stream]);
 
   useEffect(() => {
-    if (contextStateArray.length == 2 || contextStateArray.length >= 2) {
-      storeChatData(user.uid, contextStateArray);
+    if (authenticated) {
+      if (contextStateArray.length == 2 || contextStateArray.length >= 2) {
+        storeChatData(user.uid, contextStateArray);
+      }
+      // console.log("contaxarray useeffect... Running after logging out");
+    } else {
+      setContextStateArray([]);
     }
   }, [contextStateArray]);
 
   return (
     <>
-      <div className="relative max-w-[1400px] text-white mx-auto mt-[56px] mb-[50px] min-h-full pb-[90px] px-5">
+      <div className="max-w-[1400px] text-white mx-auto mt-[56px] mb-[50px] min-h-full pb-[90px] px-5">
         <div>
           <div>
             <div>
@@ -299,17 +310,6 @@ const PromptInput = () => {
                 </div>
               ))}
             </div>
-            {/* <div>
-              <InfiniteScroll
-                dataLength={Chats?.length}
-                next={() => {
-                  setChats(chats?.slice(0, (infinitePage + 1) * 10));
-                  setInfinitePage((prev) => prev + 1);
-                }}
-                hasMore={true}
-              >
-              </InfiniteScroll>
-            </div> */}
             <div
               ref={streamTerminator}
               className={`bg-transparent mt-[20px] flex gap-[20px]`}
@@ -345,7 +345,13 @@ const PromptInput = () => {
             <div ref={chatEndRef}></div>
           </div>
         </div>
-        <div className="fixed bottom-0 max-w-[1150px] w-full">
+        <div
+          className={
+            !isCollapsed
+              ? "fixed left-[250px] bottom-0 md:w-[73.29%] md:left-[250px] lg:w-[80%] lg:left-[250px] xl:w-[83.3%] xxl:w-[90%] xxxl:w-[90%]"
+              : "fixed left-[54px] bottom-0 md:w-[96%] md:left-[54px] lg:w-[96%] lg:left-[54px] xl:w-[96.5%] xxl:w-[96.5%] xxxl:w-[98%]"
+          }
+        >
           <div className="bg-[#212121] pb-5 w-full flex justify-center items-center">
             <div className="flex bg-[#2F2F2F] max-w-[768px] w-full rounded-full h-[52px]  items-center px-[15px]">
               <div

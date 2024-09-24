@@ -242,3 +242,15 @@ export const Logo = (props) => (
     </defs>
   </svg>
 )
+
+export const EyeBtn = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} {...props}>
+    <circle cx={10} cy={10} r={2} />
+    <path
+      fill="none"
+      stroke="#fff"
+      strokeWidth={1}
+      d="M10 5c-4 0-7.5 3-10 6 2.5 3 6 6 10 6s7.5-3 10-6c-2.5-3-6-6-10-6zm0 10c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"
+    />
+  </svg>
+)

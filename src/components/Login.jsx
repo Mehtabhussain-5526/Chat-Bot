@@ -1,19 +1,24 @@
-import React, { useRef } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../config/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
-
+import { EyeBtn } from "./Graphics";
+import { MyContext } from "../context/context";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const displayErrorRef = useRef();
+  const [showPassword, setShowPassword] = useState(false);
+  const {setContextStateArray,contextStateArray}=useContext(MyContext);
+  document.addEventListener("load",(e)=>{
+    setContextStateArray([]);
+    // console.log("onload doc... Running after logging out",contextStateArray)
 
+  });
   const handleLogin = async (e) => {
     e.preventDefault();
-
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
@@ -22,8 +27,6 @@ const Login = () => {
       );
       const user = userCredential.user;
 
-      // console.log("User logged in:", user.uid);
-
       navigate("/mainpage");
     } catch (err) {
       setError(err.message);
@@ -31,18 +34,32 @@ const Login = () => {
     }
   };
 
+  const handleTogglePassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  useEffect(() => {
+    if (!error == "") {
+      setInterval(() => {
+        setError("");
+      }, 5000);
+    }
+  }, [error])
+  
   return (
     <>
       <div className="flex items-center justify-center min-h-screen ">
         <div className="w-full max-w-md p-8 rounded-lg shadow-md bg-[#2F2F2F]">
-          <h2 className="mb-6 text-2xl font-bold text-center text-white text-opacity-50 ">
+          <h2 className="mb-3 text-2xl font-bold text-center text-white text-opacity-50">
             Login to Chat-Bot
           </h2>
-          {/* {setError && (
-            <div className="text-center">
-              <p className="text-red-500 text-[14px] tracking-wider">Invalid Email address or Password</p>
+          {error && (
+            <div className="mt-2 text-center">
+              <p className="text-red-500 text-[14px] tracking-wider">
+                Invalid Email address or Password
+              </p>
             </div>
-          )} */}
+          )}
           <form onSubmit={handleLogin}>
             <div className="mb-4">
               <label
@@ -68,15 +85,23 @@ const Login = () => {
               >
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-[5px] border bg-[#2f2f2f] border-white border-opacity-50 rounded-md focus:outline-none focus:ring focus:ring-[#10a37f] focus:border-[#10a37f] placeholder:text-white placeholder:text-opacity-50 placeholder:text-[14px] text-white"
-                placeholder="Enter your password"
-                required
-              />
+              <div className="relative flex items-center">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-[5px] border bg-[#2f2f2f] border-white border-opacity-50 rounded-md focus:outline-none focus:ring focus:ring-[#10a37f] focus:border-[#10a37f] placeholder:text-white placeholder:text-opacity-50 placeholder:text-[14px] text-white"
+                  placeholder="Enter your password"
+                  required
+                />
+                <div
+                  onClick={handleTogglePassword}
+                  className="absolute right-2"
+                >
+                  <EyeBtn />
+                </div>
+              </div>
             </div>
             <button
               type="submit"

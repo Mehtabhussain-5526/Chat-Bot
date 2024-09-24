@@ -7,11 +7,11 @@ const MainContentDiv = () => {
   return (
     <>
       <div className="flex min-h-screen">
-        <div>
+        <div className="z-50">
           <Sidebar />
         </div>
-        <div className="w-full">
-          <div className="fixed top-0 z-10 w-full max-w-[1190px] bg-bgsecondary">
+        <div className="relative w-full">
+          <div className="sticky top-0 z-10 w-[100%] bg-bgsecondary">
             <Nav />
           </div>
           <div className="text-white ">

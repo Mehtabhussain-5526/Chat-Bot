@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate, useNavigation } from "react-router-dom";
 import { auth, db } from "../config/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore"; // For writing to Firestore
+import { EyeBtn } from "./Graphics";
+import { MyContext } from "../context/context";
 
 const SignUp = () => {
   const [firstName, setFirstName] = useState("");
@@ -11,6 +13,7 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -21,7 +24,6 @@ const SignUp = () => {
         password
       );
       const user = userCredential.user;
-
       await setDoc(doc(db, "users", user.uid), {
         id: user.uid,
         firstName: firstName,
@@ -29,13 +31,14 @@ const SignUp = () => {
         email: email,
         password: password,
       });
-
-      // console.log("User registered and details saved to Firestore:", user.uid);
       navigate("/mainpage");
     } catch (err) {
       setError(err.message);
-      console.error("Error registering user:", err);
     }
+  };
+
+  const handleTogglePassword = () => {
+    setShowPassword(!showPassword);
   };
   return (
     <>
@@ -103,15 +106,23 @@ const SignUp = () => {
               >
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-[5px] border bg-[#2f2f2f] border-white border-opacity-50 rounded-md focus:outline-none focus:ring focus:ring-[#10a37f] focus:border-[#10a37f] placeholder:text-white placeholder:text-opacity-50 placeholder:text-[14px] text-white"
-                placeholder="Enter your password"
-                required
-              />
+              <div className="relative flex items-center">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-[5px] border bg-[#2f2f2f] border-white border-opacity-50 rounded-md focus:outline-none focus:ring focus:ring-[#10a37f] focus:border-[#10a37f] placeholder:text-white placeholder:text-opacity-50 placeholder:text-[14px] text-white"
+                  placeholder="Enter your password"
+                  required
+                />
+                <div
+                  onClick={handleTogglePassword}
+                  className="absolute right-2"
+                >
+                  <EyeBtn />
+                </div>
+              </div>
             </div>
             <button
               type="submit"
