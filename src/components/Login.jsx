@@ -11,11 +11,10 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const {setContextStateArray,contextStateArray}=useContext(MyContext);
-  document.addEventListener("load",(e)=>{
+  const { setContextStateArray, contextStateArray } = useContext(MyContext);
+  document.addEventListener("load", (e) => {
     setContextStateArray([]);
     // console.log("onload doc... Running after logging out",contextStateArray)
-
   });
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -44,8 +43,8 @@ const Login = () => {
         setError("");
       }, 5000);
     }
-  }, [error])
-  
+  }, [error]);
+
   return (
     <>
       <div className="flex items-center justify-center min-h-screen ">

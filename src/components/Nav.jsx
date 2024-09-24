@@ -9,7 +9,7 @@ import { MyContext } from "../context/context";
 const Nav = () => {
   const [fullName, setFullName] = useState("");
   const navigate = useNavigate();
-  const { setContextStateArray, contextStateArray} = useContext(MyContext);
+  const { setContextStateArray, contextStateArray } = useContext(MyContext);
   const user = auth.currentUser;
 
   const handleLogOut = () => {

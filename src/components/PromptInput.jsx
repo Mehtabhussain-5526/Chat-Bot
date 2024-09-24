@@ -25,7 +25,8 @@ const PromptInput = () => {
   const [promptEntered, SetPromptEntered] = useState();
   const [stream, setStream] = useState("");
   const [isrecording, setisrecording] = useState(false);
-  const {authenticated, contextStateArray, setContextStateArray } = useContext(MyContext);
+  const { authenticated, contextStateArray, setContextStateArray } =
+    useContext(MyContext);
   const { setSharedVar, sharedVar } = useContext(MyContext);
   const { isCollapsed } = useContext(MyContext);
   const streamRef = useRef(null);
@@ -156,7 +157,7 @@ const PromptInput = () => {
                 setStream((prev) => prev + content);
               }
             } catch (error) {
-              console.error("Error parsing line:", line, error);
+              // console.error("Error parsing line:", line, error);
             }
           }
         }

@@ -168,7 +168,7 @@ export const SidebarToggle = (props) => (
       d="M11 5v14M6 8h2m-2 3h2m-2 3h2m-1.8 5h11.6c1.12 0 1.68 0 2.108-.218a2 2 0 0 0 .874-.874C21 17.48 21 16.92 21 15.8V8.2c0-1.12 0-1.68-.218-2.108a2 2 0 0 0-.874-.874C19.48 5 18.92 5 17.8 5H6.2c-1.12 0-1.68 0-2.108.218a2 2 0 0 0-.874.874C3 6.52 3 7.08 3 8.2v7.6c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874C4.52 19 5.08 19 6.2 19Z"
     />
   </svg>
-)
+);
 
 export const Logo = (props) => (
   <svg
@@ -241,7 +241,7 @@ export const Logo = (props) => (
       </linearGradient>
     </defs>
   </svg>
-)
+);
 
 export const EyeBtn = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} {...props}>
@@ -253,4 +253,4 @@ export const EyeBtn = (props) => (
       d="M10 5c-4 0-7.5 3-10 6 2.5 3 6 6 10 6s7.5-3 10-6c-2.5-3-6-6-10-6zm0 10c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"
     />
   </svg>
-)
+);

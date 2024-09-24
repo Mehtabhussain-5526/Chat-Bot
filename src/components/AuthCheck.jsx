@@ -7,9 +7,10 @@ import { MyContext } from "../context/context";
 
 const AuthCheck = () => {
   const [loading, setLoading] = useState(true);
-  const {authenticated, setAuthenticated} = useContext(MyContext);
+  const { authenticated, setAuthenticated } = useContext(MyContext);
   const navigate = useNavigate();
-  const {setContextStateArray,contextStateArray,setSharedVar} = useContext(MyContext);
+  const { setContextStateArray, contextStateArray, setSharedVar } =
+    useContext(MyContext);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -27,10 +28,10 @@ const AuthCheck = () => {
   useEffect(() => {
     setContextStateArray([]);
     setSharedVar("");
-  }, [authenticated])
-  
+  }, [authenticated]);
+
   // console.log("auth check...: ",contextStateArray);
-  return authenticated ? <MainContentDiv/> : null;
+  return authenticated ? <MainContentDiv /> : null;
 };
 
 export default AuthCheck;
