@@ -6,7 +6,6 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { materialDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../config/firebase";
 import {
   collection,
@@ -15,16 +14,18 @@ import {
   addDoc,
   query,
   where,
-  serverTimestamp,
   updateDoc,
+  serverTimestamp
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { MyContext } from "../context/context";
+import { Oval } from "react-loader-spinner";
 
 const PromptInput = () => {
   const [promptEntered, SetPromptEntered] = useState();
   const [stream, setStream] = useState("");
   const [isrecording, setisrecording] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { authenticated, contextStateArray, setContextStateArray } =
     useContext(MyContext);
   const { setSharedVar, sharedVar } = useContext(MyContext);
@@ -36,6 +37,8 @@ const PromptInput = () => {
   const promptinputRef = useRef();
   const apiKey = import.meta.env.VITE_ACCESS_KEY;
   const user = auth.currentUser;
+  const localId=Date.now();
+
 
   const newChathandle = async () => {
     try {
@@ -44,6 +47,7 @@ const PromptInput = () => {
       const chatData = {
         userId: user.uid,
         chatContext: contextStateArray,
+        localId:localId,
         timestamp: serverTimestamp(),
       };
 
@@ -53,6 +57,10 @@ const PromptInput = () => {
     } catch (error) {
       console.error("Error adding chat document: ", error);
     }
+  };
+
+  const handleInputRequest = () => {
+    setLoading(true);
   };
 
   if (!sharedVar) {
@@ -82,9 +90,7 @@ const PromptInput = () => {
         const existingDocRef = doc(db, "chats", sharedVar);
 
         const chatData = {
-          userId: userId,
           chatContext: chatContext,
-          timestamp: serverTimestamp(),
         };
         const docRef = await updateDoc(existingDocRef, chatData);
         setSharedVar(sharedVar);
@@ -95,6 +101,7 @@ const PromptInput = () => {
   };
 
   const save = async (prompt) => {
+    handleInputRequest();
     if (promptEntered) {
       setContextStateArray((prevState) => [
         ...prevState,
@@ -136,6 +143,7 @@ const PromptInput = () => {
         const { done, value } = chunk;
         if (done) {
           setStream("");
+          setLoading(false);
           // console.log("done");
           break;
         }
@@ -377,9 +385,22 @@ const PromptInput = () => {
                   placeholder="Prompt Here"
                   type="text"
                 />
-                <button type="submit" className="cursor-pointer">
-                  <Send />
-                </button>
+                {loading ? (
+                  <Oval
+                    height={30}
+                    width={30}
+                    color="#20B2AA"
+                    visible={true}
+                    ariaLabel="oval-loading"
+                    secondaryColor="#4682B4"
+                    strokeWidth={2}
+                    strokeWidthSecondary={5}
+                  />
+                ) : (
+                  <button type="submit" className="cursor-pointer">
+                    <Send />
+                  </button>
+                )}
               </form>
             </div>
           </div>

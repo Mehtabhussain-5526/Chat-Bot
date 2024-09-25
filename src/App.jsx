@@ -5,6 +5,7 @@ import SignUp from "./components/SignUp.jsx";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { MyProvider } from "./context/context.jsx";
 
+
 const App = () => {
   return (
     <MyProvider>

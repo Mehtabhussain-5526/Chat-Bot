@@ -14,18 +14,22 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
+import { Oval } from "react-loader-spinner";
 import { data } from "autoprefixer";
 
 const Sidebar = () => {
   const [chats, setChats] = useState([]);
-  const { setSharedVar, sharedVar } = useContext(MyContext);
+  const [loading, setLoading] = useState(false);
   const {
+    setSharedVar,
+    sharedVar,
     isCollapsed,
     setIsCollapsed,
     contextStateArray,
     setContextStateArray,
   } = useContext(MyContext);
   const user = auth.currentUser;
+  const localId = Date.now();
 
   const newChathandle = async () => {
     if (sharedVar !== "") {
@@ -41,6 +45,7 @@ const Sidebar = () => {
               const chatData = {
                 userId: user.uid,
                 chatContext: [],
+                localId: localId,
                 timestamp: serverTimestamp(),
               };
               const docRef = await addDoc(chatsCollectionRef, chatData);
@@ -59,6 +64,7 @@ const Sidebar = () => {
         const chatData = {
           userId: user.uid,
           chatContext: [],
+          localId: localId,
           timestamp: serverTimestamp(),
         };
         const docRef = await addDoc(chatsCollectionRef, chatData);
@@ -72,6 +78,7 @@ const Sidebar = () => {
   useEffect(() => {
     setContextStateArray([]);
     const fetchUserChats = async () => {
+      setLoading(true);
       try {
         if (user) {
           const q = query(
@@ -84,9 +91,12 @@ const Sidebar = () => {
             id: doc.id,
             ...doc.data(),
           }));
-          setChats(userChats);
+          const sortedChats = userChats.sort((a, b) => b.localId - a.localId);
+          setLoading(false);
+          setChats(sortedChats);
         }
       } catch (error) {
+        setLoading(true);
         console.error("Error fetching user chats: ", error);
       }
     };
@@ -138,6 +148,21 @@ const Sidebar = () => {
             />
           </div>
         ))}
+
+        {loading && (
+          <div className="flex items-center justify-center w-full mt-5">
+            <Oval
+              height={40}
+              width={40}
+              color="#20B2AA"
+              visible={true}
+              ariaLabel="oval-loading"
+              secondaryColor="#4682B4"
+              strokeWidth={2}
+              strokeWidthSecondary={5}
+            />
+          </div>
+        )}
       </div>
       {isCollapsed && (
         <div
