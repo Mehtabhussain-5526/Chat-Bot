@@ -6,7 +6,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { EyeBtn } from "./Graphics";
 import { MyContext } from "../context/context";
 import { Oval } from "react-loader-spinner";
-import { toast,Bounce } from "react-toastify";
+import { toast, Bounce } from "react-toastify";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -55,7 +55,7 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if (error.trim()=="") {
+    if (error.trim() == "") {
       setTimeout(() => {
         setError("");
       }, 5000);
@@ -65,18 +65,31 @@ const Login = () => {
   return (
     <>
       {loading ? (
-        <div className="flex items-center justify-center h-screen">
-          <Oval
-            height={80}
-            width={80}
-            color="#20B2AA"
-            visible={true}
-            ariaLabel="oval-loading"
-            secondaryColor="#4682B4"
-            strokeWidth={2}
-            strokeWidthSecondary={5}
-          />
-        </div>
+        <>
+          {toast.success("Please wait Logging In...", {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            transition: Bounce,
+          })}
+          <div className="flex items-center justify-center h-screen">
+            <Oval
+              height={80}
+              width={80}
+              color="#20B2AA"
+              visible={true}
+              ariaLabel="oval-loading"
+              secondaryColor="#4682B4"
+              strokeWidth={2}
+              strokeWidthSecondary={5}
+            />
+          </div>
+        </>
       ) : (
         <div className="flex items-center justify-center min-h-screen ">
           <div className="w-full max-w-md p-8 rounded-lg shadow-md bg-[#2F2F2F]">
