@@ -7,6 +7,7 @@ import { EyeBtn } from "./Graphics";
 import { MyContext } from "../context/context";
 import { toast, Bounce } from "react-toastify";
 import { Oval } from "react-loader-spinner";
+import { sendEmailVerification } from "firebase/auth";
 
 const SignUp = () => {
   const [firstName, setFirstName] = useState("");
@@ -28,6 +29,7 @@ const SignUp = () => {
         password
       );
       const user = userCredential.user;
+      await sendEmailVerification(user);
       await setDoc(doc(db, "users", user.uid), {
         id: user.uid,
         firstName: firstName,
@@ -42,7 +44,7 @@ const SignUp = () => {
     } catch (err) {
       setLoading(false);
       setError(err.message);
-      toast.error("Error while Signing Up!", {
+      toast.error(err.message, {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,

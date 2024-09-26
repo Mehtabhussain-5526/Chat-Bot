@@ -68,7 +68,7 @@ const Login = () => {
         <>
           {toast.success("Please wait Logging In...", {
             position: "top-right",
-            autoClose: 2000,
+            autoClose: 3000,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
