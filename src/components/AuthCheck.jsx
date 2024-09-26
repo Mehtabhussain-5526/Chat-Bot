@@ -4,7 +4,7 @@ import { auth } from "../config/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import MainContentDiv from "./MainContentDiv";
 import { MyContext } from "../context/context";
-
+import { toast,Bounce } from "react-toastify";
 const AuthCheck = () => {
   const [loading, setLoading] = useState(true);
   const { authenticated, setAuthenticated } = useContext(MyContext);
@@ -18,19 +18,27 @@ const AuthCheck = () => {
         setAuthenticated(true);
       } else {
         setAuthenticated(false);
+        toast.warn("Please Login to Proceed!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Bounce,
+        });
         navigate("/");
       }
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, [navigate]);
   useEffect(() => {
     setContextStateArray([]);
     setSharedVar("");
   }, [authenticated]);
-
-  // console.log("auth check...: ",contextStateArray);
   return authenticated ? <MainContentDiv /> : null;
 };
 

@@ -3,7 +3,7 @@ import SingleChat from "./SingleChat";
 import { NewChat, SidebarToggle } from "./Graphics";
 import { auth, db } from "../config/firebase";
 import { MyContext } from "../context/context";
-
+import { toast, Bounce } from "react-toastify";
 import {
   collection,
   doc,
@@ -51,12 +51,32 @@ const Sidebar = () => {
               const docRef = await addDoc(chatsCollectionRef, chatData);
               setSharedVar(docRef.id);
             } catch (error) {
-              console.error("Error adding chat document: ", error);
+              toast.error("Error Adding Document!", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+              });
             }
           }
         }
       } catch (error) {
-        console.error(error);
+        toast.error("Unexpected Error!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce,
+        });
       }
     } else {
       try {
@@ -70,7 +90,17 @@ const Sidebar = () => {
         const docRef = await addDoc(chatsCollectionRef, chatData);
         setSharedVar(docRef.id);
       } catch (error) {
-        console.error("Error adding chat document: ", error);
+        toast.error("Error Adding Document!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce,
+        });
       }
     }
   };
@@ -97,7 +127,17 @@ const Sidebar = () => {
         }
       } catch (error) {
         setLoading(true);
-        console.error("Error fetching user chats: ", error);
+        toast.error("Error Fetching Chats!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce,
+        });
       }
     };
     fetchUserChats();
@@ -106,12 +146,6 @@ const Sidebar = () => {
   const handleToggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
-
-  useEffect(() => {
-    if (contextStateArray.length > 0) {
-      // console.log("Empty or what",contextStateArray)
-    }
-  }, [user]);
 
   return (
     <>

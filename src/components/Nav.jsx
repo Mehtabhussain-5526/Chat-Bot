@@ -6,7 +6,7 @@ import { signOut } from "firebase/auth";
 import { getDoc, doc } from "firebase/firestore";
 import { MyContext } from "../context/context";
 import { Oval } from "react-loader-spinner";
-
+import { toast, Bounce } from "react-toastify";
 const Nav = () => {
   const [fullName, setFullName] = useState("");
   const navigate = useNavigate();
@@ -18,11 +18,31 @@ const Nav = () => {
     setContextStateArray([]);
     signOut(auth)
       .then(() => {
+        toast.success("Successfully Logged Out.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce,
+        });
         navigate("/");
-        // console.log("Signed out successfully", contextStateArray);
       })
       .catch((error) => {
-        console.error(error);
+        toast.error("Failed to Logout!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce,
+        });
       });
   };
 
@@ -38,7 +58,17 @@ const Nav = () => {
       }
       fullName && setLoading(false);
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      toast.error("Failed to Fetch User Name!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        transition: Bounce,
+      });
     }
   };
 
@@ -74,8 +104,13 @@ const Nav = () => {
               )}
             </div>
           </div>
-          <div className="flex gap-4 cursor-pointer px-3 py-[5px] bg-red-400 rounded hover:font-bold hover:bg-red-500 focus:outline-none focus:ring focus:ring-[#119272]" onClick={handleLogOut}>
-            <p className="text-white text-[14px] tracking-wider self-center leading-[14px]">Logout</p>
+          <div
+            className="flex gap-4 cursor-pointer px-3 py-[5px] bg-red-400 rounded hover:font-bold hover:bg-red-500 focus:outline-none focus:ring focus:ring-[#119272]"
+            onClick={handleLogOut}
+          >
+            <p className="text-white text-[14px] tracking-wider self-center leading-[14px]">
+              Logout
+            </p>
             <Share />
           </div>
         </div>

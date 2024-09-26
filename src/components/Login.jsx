@@ -6,6 +6,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { EyeBtn } from "./Graphics";
 import { MyContext } from "../context/context";
 import { Oval } from "react-loader-spinner";
+import { toast,Bounce } from "react-toastify";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -18,7 +19,6 @@ const Login = () => {
 
   document.addEventListener("load", (e) => {
     setContextStateArray([]);
-    // console.log("onload doc... Running after logging out",contextStateArray)
   });
   const handleLogin = async (e) => {
     setLoading(true);
@@ -30,14 +30,23 @@ const Login = () => {
         password
       );
       const user = userCredential.user;
-      setError("");
       setTimeout(() => {
         navigate("/mainpage");
       }, 1000);
     } catch (err) {
       setLoading(false);
       setError(err.message);
-      console.error("Error logging in:", err);
+      toast.error("Invalid Credentials!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        transition: Bounce,
+      });
     }
   };
 
@@ -46,8 +55,8 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if (!error == "") {
-      setInterval(() => {
+    if (error.trim()=="") {
+      setTimeout(() => {
         setError("");
       }, 5000);
     }

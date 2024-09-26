@@ -15,30 +15,34 @@ import {
   query,
   where,
   updateDoc,
-  serverTimestamp
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { MyContext } from "../context/context";
 import { Oval } from "react-loader-spinner";
+import { toast, Bounce } from "react-toastify";
 
 const PromptInput = () => {
   const [promptEntered, SetPromptEntered] = useState();
   const [stream, setStream] = useState("");
   const [isrecording, setisrecording] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { authenticated, contextStateArray, setContextStateArray } =
-    useContext(MyContext);
-  const { setSharedVar, sharedVar } = useContext(MyContext);
-  const { isCollapsed } = useContext(MyContext);
   const streamRef = useRef(null);
   const streamTerminator = useRef();
   const recorderRef = useRef(null);
   const chatEndRef = useRef(null);
   const promptinputRef = useRef();
+  const {
+    authenticated,
+    contextStateArray,
+    setContextStateArray,
+    isCollapsed,
+    setSharedVar,
+    sharedVar,
+  } = useContext(MyContext);
   const apiKey = import.meta.env.VITE_ACCESS_KEY;
   const user = auth.currentUser;
-  const localId=Date.now();
-
+  const localId = Date.now();
 
   const newChathandle = async () => {
     try {
@@ -47,7 +51,7 @@ const PromptInput = () => {
       const chatData = {
         userId: user.uid,
         chatContext: contextStateArray,
-        localId:localId,
+        localId: localId,
         timestamp: serverTimestamp(),
       };
 
@@ -55,7 +59,17 @@ const PromptInput = () => {
 
       setSharedVar(docRef.id);
     } catch (error) {
-      console.error("Error adding chat document: ", error);
+      toast.error("Failed to Save Chat!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        transition: Bounce,
+      });
     }
   };
 
@@ -84,18 +98,27 @@ const PromptInput = () => {
     }
   };
 
-  const storeChatData = async (userId, chatContext) => {
+  const storeChatData = async (chatContext) => {
     if (sharedVar) {
       try {
         const existingDocRef = doc(db, "chats", sharedVar);
-
         const chatData = {
           chatContext: chatContext,
         };
         const docRef = await updateDoc(existingDocRef, chatData);
         setSharedVar(sharedVar);
       } catch (error) {
-        console.error("Error updating chat document: ", error);
+        toast.error("Updating Error!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce,
+        });
       }
     }
   };
@@ -180,17 +203,41 @@ const PromptInput = () => {
         SetPromptEntered("");
       }
     } catch (error) {
-      // console.log("try Error:", error.message);
+      toast.error("Failed to Complete Request!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        transition: Bounce,
+      });
     }
   };
 
   const startRecording = async () => {
-    streamRef.current = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-    });
-    recorderRef.current = new RecordRTC(streamRef.current, { type: "audio" });
-    recorderRef.current.startRecording();
-    setisrecording(true);
+    try {
+      streamRef.current = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+      recorderRef.current = new RecordRTC(streamRef.current, { type: "audio" });
+      recorderRef.current.startRecording();
+      setisrecording(true);
+    } catch (error) {
+      toast.error("Please Insert Microphone!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        transition: Bounce,
+      });
+    }
   };
   const wisper = async (audio) => {
     if (audio) {
@@ -211,7 +258,17 @@ const PromptInput = () => {
         );
         promptinputRef.current.value = response.data;
       } catch (error) {
-        console.error("Error during transcription:", error);
+        toast.error("Error during transcription!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce,
+        });
       }
     }
   };
@@ -242,8 +299,20 @@ const PromptInput = () => {
 
   useEffect(() => {
     if (promptEntered) {
-      if (promptEntered !== "") {
+      if (promptEntered.trim() !== "") {
         save();
+      } else {
+        toast.warn("Please Enter a Prompt!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce,
+        });
       }
     }
   }, [promptEntered]);
