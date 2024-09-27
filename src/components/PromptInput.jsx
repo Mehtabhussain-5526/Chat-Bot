@@ -324,7 +324,7 @@ const PromptInput = () => {
   useEffect(() => {
     if (authenticated) {
       if (contextStateArray.length == 2 || contextStateArray.length >= 2) {
-        storeChatData(user.uid, contextStateArray);
+        storeChatData(contextStateArray);
       }
       // console.log("contaxarray useeffect... Running after logging out");
     } else {
@@ -338,7 +338,7 @@ const PromptInput = () => {
         <div>
           <div>
             <div>
-              {contextStateArray.map((data, index) => (
+              {contextStateArray?.map((data, index) => (
                 <div key={index} className="">
                   {data.role !== "assistant" ? (
                     <div className=" flex justify-end w-full text-left text-white bg-transparent mt-[30px]">

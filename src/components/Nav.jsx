@@ -3,7 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Share } from "./Graphics";
 import { auth, db } from "../config/firebase";
 import { signOut } from "firebase/auth";
-import { getDoc, doc } from "firebase/firestore";
+import {
+  getDoc,
+  doc,
+  getDocs,
+  deleteDoc,
+  collection,
+} from "firebase/firestore";
 import { MyContext } from "../context/context";
 import { Oval } from "react-loader-spinner";
 import { toast, Bounce } from "react-toastify";
@@ -14,9 +20,24 @@ const Nav = () => {
   const user = auth.currentUser;
   const [loading, setLoading] = useState(false);
 
+  const cleanUp = async () => {
+    const querySnapshot = await getDocs(collection(db, "chats"));
+    querySnapshot.forEach(async (documentSnapshot) => {
+      const docData = documentSnapshot.data();
+      if (
+        Array.isArray(docData.chatContext) &&
+        docData.chatContext.length == 0
+      ) {
+        await deleteDoc(doc(db, "chats", documentSnapshot.id));
+      }
+    });
+  };
   const handleLogOut = () => {
     setContextStateArray([]);
-    signOut(auth)
+    cleanUp()
+      .then(() => {
+        signOut(auth);
+      })
       .then(() => {
         toast.success("Successfully Logged Out.", {
           position: "top-right",

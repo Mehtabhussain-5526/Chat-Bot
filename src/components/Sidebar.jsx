@@ -9,6 +9,7 @@ import {
   doc,
   getDoc,
   addDoc,
+  deleteDoc,
   serverTimestamp,
   query,
   where,
@@ -39,6 +40,17 @@ const Sidebar = () => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (data.chatContext.length == 0) {
+            toast.warn("Already Created.", {
+              position: "top-right",
+              autoClose: 1000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "colored",
+              transition: Bounce,
+            });
           } else {
             try {
               const chatsCollectionRef = collection(db, "chats");
@@ -50,6 +62,17 @@ const Sidebar = () => {
               };
               const docRef = await addDoc(chatsCollectionRef, chatData);
               setSharedVar(docRef.id);
+              toast.success("New Chat Created", {
+                position: "top-right",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+              });
             } catch (error) {
               toast.error("Error Adding Document!", {
                 position: "top-right",
@@ -67,30 +90,6 @@ const Sidebar = () => {
         }
       } catch (error) {
         toast.error("Unexpected Error!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          transition: Bounce,
-        });
-      }
-    } else {
-      try {
-        const chatsCollectionRef = collection(db, "chats");
-        const chatData = {
-          userId: user.uid,
-          chatContext: [],
-          localId: localId,
-          timestamp: serverTimestamp(),
-        };
-        const docRef = await addDoc(chatsCollectionRef, chatData);
-        setSharedVar(docRef.id);
-      } catch (error) {
-        toast.error("Error Adding Document!", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,

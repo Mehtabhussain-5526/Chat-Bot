@@ -25,17 +25,6 @@ const AuthCheck = () => {
         if (user.emailVerified) {
           setAuthenticated(true);
           setIsVerified(true);
-          toast.success("Verified.", {
-            position: "top-right",
-            autoClose: 2000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "dark",
-            transition: Bounce,
-          });
         } else {
           setAuthenticated(false);
           setIsVerified(false);
@@ -106,7 +95,7 @@ const AuthCheck = () => {
           >
             <div className="max-w-md p-8 text-center rounded-lg shadow-md bg-[#2F2F2F]">
               <h1 className="mb-4 text-2xl font-bold text-center text-white text-opacity-50">
-                Verify Your Account
+                Verification CheckPoint
               </h1>
               <p className="mb-6  text-[#10a37f] tracking-wider font-medium">
                 Verification email sent
@@ -130,7 +119,7 @@ const AuthCheck = () => {
 
               <button
                 onClick={handleLoginRedirect}
-                className="px-4 py-2 text-whitepx-4 font-bold text-white bg-[#10a37f] rounded hover:bg-[#119272] focus:outline-none focus:ring focus:ring-[#119272]"
+                className="py-2 w-full text-whitepx-4 font-bold text-white bg-[#10a37f] rounded hover:bg-[#119272] focus:outline-none focus:ring focus:ring-[#119272]"
               >
                 Login
               </button>
